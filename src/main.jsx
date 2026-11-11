@@ -99,13 +99,42 @@ function RiverGap({ id, context }) {
   );
 }
 
-function Progress({ decisions, compact = false, announce = false }) {
+function Progress({ decisions, current, openNode, onNavigate, announce = false }) {
   const count = Object.keys(decisions).length;
   const tally = <span aria-live={announce ? 'polite' : undefined}>{count} de {questions.length} respondidas</span>;
 
+  if (onNavigate) {
+    return (
+      <nav className="compact-progress" aria-label="Progreso y navegación del recorrido">
+        {tally}
+        <ol className="progress-steps">
+          {questions.map((question, index) => {
+            const answered = Boolean(decisions[question.id]);
+            const open = openNode === question.id;
+            return (
+              <li key={question.id}>
+                <a className="progress-step" href={`#node-${question.id}`} title={question.short}
+                  aria-label={`${index + 1}. ${question.short}, ${answered ? 'respondida' : 'pendiente'}${open ? ', abierta' : ''}`}
+                  aria-current={current === question.id ? 'location' : undefined}
+                  data-answered={answered || undefined} data-open={open || undefined}
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    event.preventDefault();
+                    onNavigate(question.id);
+                  }}>
+                  <span aria-hidden="true">{index + 1}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </nav>
+    );
+  }
+
   return (
-    <div className={compact ? 'compact-progress' : 'progress'}>
-      {compact ? tally : <div className="progress-label"><span>TU PROGRESO</span>{tally}</div>}
+    <div className="progress">
+      <div className="progress-label"><span>TU PROGRESO</span>{tally}</div>
       <div className="progress-bars" aria-hidden="true">
         {questions.map((question) => <span key={question.id} className={decisions[question.id] ? 'filled' : ''} />)}
       </div>
@@ -116,6 +145,7 @@ function Progress({ decisions, compact = false, announce = false }) {
 function App() {
   const [decisions, setDecisions] = useState(loadDecisions);
   const [openNode, setOpenNode] = useState(null);
+  const [visibleNode, setVisibleNode] = useState(questions[0].id);
   const [showMap, setShowMap] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [status, setStatus] = useState('');
@@ -123,12 +153,14 @@ function App() {
   const dialog = useRef(null);
   const header = useRef(null);
   const hero = useRef(null);
+  const track = useRef(null);
   const mapDestination = useRef(null);
   const mapTrigger = useRef(null);
   const scrollAnimation = useRef(null);
   const count = Object.keys(decisions).length;
   const next = questions.find((question) => !decisions[question.id])?.id;
   const activeIndex = questions.findIndex((question) => question.id === openNode);
+  const current = openNode ?? visibleNode;
 
   useEffect(() => {
     const headerElement = header.current;
@@ -154,6 +186,40 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const cards = questions.map(({ id }) => document.getElementById(`toggle-${id}`));
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const readingLine = window.innerHeight / 2;
+      let closest = 0;
+      let distance = Infinity;
+      cards.forEach((card, index) => {
+        const { top, height } = card.getBoundingClientRect();
+        const difference = Math.abs(top + height / 2 - readingLine);
+        if (difference < distance) {
+          closest = index;
+          distance = difference;
+        }
+      });
+      const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      setVisibleNode(questions[atEnd ? questions.length - 1 : closest].id);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const resize = new ResizeObserver(schedule);
+    resize.observe(track.current);
+    resize.observe(hero.current);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    schedule();
+    return () => {
+      resize.disconnect();
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useEffect(() => {
     const stop = () => scrollAnimation.current?.stop();
     window.addEventListener('wheel', stop, { passive: true });
     window.addEventListener('pointerdown', stop, { passive: true });
@@ -172,30 +238,37 @@ function App() {
     setOpenNode(id);
   }
 
-  function revealDecision(id) {
+  function revealDecision(id, { open = true } = {}) {
     scrollAnimation.current?.stop();
     const card = document.getElementById(`toggle-${id}`);
     const { top, height } = card.getBoundingClientRect();
     const target = window.scrollY + top + (height - window.innerHeight) / 2;
     const scroll = (y) => window.scrollTo({ top: y, behavior: 'instant' });
-    const open = () => {
+    const arrive = () => {
       card.focus({ preventScroll: true });
-      openDecision(id);
+      if (open) openDecision(id);
     };
     if (reduced || Math.abs(target - window.scrollY) < 8) {
       scroll(target);
-      open();
+      arrive();
     } else {
       scrollAnimation.current = animate(window.scrollY, target, {
-        duration: 0.42, ease, onUpdate: scroll, onComplete: open,
+        duration: 0.42, ease, onUpdate: scroll, onComplete: arrive,
       });
     }
   }
 
-  function closeDecision() {
+  function jumpToDecision(id) {
+    revealDecision(id, { open: false });
+  }
+
+  function closeDecision(destination) {
     const id = openNode;
     setOpenNode(null);
-    requestAnimationFrame(() => document.getElementById(`toggle-${id}`)?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => {
+      if (destination) jumpToDecision(destination);
+      else document.getElementById(`toggle-${id}`)?.focus({ preventScroll: true });
+    });
   }
 
   function persist(id, value) {
@@ -262,7 +335,8 @@ function App() {
           {showProgress && (
             <motion.div className="sticky-progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : 0.18 }}>
-              <Progress decisions={decisions} compact announce={!openNode && !showMap} />
+              <Progress decisions={decisions} current={current} openNode={openNode} onNavigate={jumpToDecision}
+                announce={!openNode && !showMap} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -292,7 +366,7 @@ function App() {
               <h2 id="journey-title">El recorrido</h2>
               <p>A medida que respondés, el recorrido suma evidencia y preguntas para las decisiones que siguen.</p>
             </div>
-            <div className="track">
+            <div className="track" ref={track}>
               <JourneyRiver decisions={decisions} />
               {questions.map((question, index) => (
                 <Fragment key={question.id}>
@@ -313,7 +387,9 @@ function App() {
       </motion.main>
       {activeIndex >= 0 && (
         <DecisionCamera key={openNode} question={questions[activeIndex]} index={activeIndex} saved={decisions[openNode]}
-          progress={showProgress && <Progress decisions={decisions} compact />}
+          renderProgress={showProgress ? (navigate) => (
+            <Progress decisions={decisions} current={current} openNode={openNode} onNavigate={navigate} />
+          ) : null}
           reduced={reduced} onClosed={closeDecision} status={status}
           onSave={(value) => persist(openNode, value)} onClear={() => persist(openNode, null)} />
       )}

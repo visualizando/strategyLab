@@ -23,10 +23,11 @@ function atScrollEdge(element, direction) {
   return direction < 0 ? element.scrollTop <= 1 : remaining <= 2;
 }
 
-export function DecisionCamera({ question, index, saved, reduced, onSave, onClear, onClosed, status, progress }) {
+export function DecisionCamera({ question, index, saved, reduced, onSave, onClear, onClosed, status, renderProgress }) {
   const dialog = useRef(null);
   const [origin] = useState(() => cardFrame(question.id));
   const [destination, setDestination] = useState(null);
+  const navigationTarget = useRef(null);
   const [viewport, setViewport] = useState(null);
   const touch = useRef(null);
   const wheel = useRef({ time: 0, direction: 0, distance: 0 });
@@ -54,8 +55,9 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
     };
   }, []);
 
-  function close() {
+  function close(target = null) {
     if (destination) return;
+    navigationTarget.current = target;
     setDestination(cardFrame(question.id));
   }
 
@@ -63,7 +65,7 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
     // Keep the page still until the wheel gesture that closed the card has ended.
     const remaining = lastExitWheel.current === null ? 0 : 180 - (performance.now() - lastExitWheel.current);
     if (remaining > 0) closeTimer.current = setTimeout(finishClose, remaining);
-    else onClosed();
+    else onClosed(navigationTarget.current);
   }
 
   function handleWheel(event) {
@@ -137,7 +139,7 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
             <DecisionLabel question={question} index={index} saved={saved} />
           </motion.div>
         )}
-        <motion.div className={`camera-scroll${progress ? ' has-progress' : ''}`}
+        <motion.div className={`camera-scroll${renderProgress ? ' has-progress' : ''}`}
           style={expanded && { width: expanded.width - 2, height: expanded.height - 2 }} inert={closing}
           initial={{ opacity: reduced ? 1 : 0 }} animate={{ opacity: !closing && viewport ? 1 : 0 }}
           transition={{ duration: reduced ? 0 : 0.21, delay: closing || reduced ? 0 : 0.17 }}
@@ -147,10 +149,10 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
             <div className="camera-header-inner">
               <span>{index + 1}. {question.short}</span>
             </div>
-            {progress}
+            {renderProgress?.(close)}
           </header>
           <Controls question={question} saved={saved} onSave={onSave} onClear={onClear}
-            onClose={close} reduced={reduced} />
+            onClose={() => close()} reduced={reduced} />
           <p className={status.startsWith('El navegador') ? 'storage-status' : 'sr-only'} role="status">{status}</p>
         </motion.div>
       </motion.div>
