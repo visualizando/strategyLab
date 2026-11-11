@@ -2,14 +2,14 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AnimatePresence, animate, motion, useReducedMotion } from 'motion/react';
 import '@fontsource-variable/dm-sans';
-import { CAPSULES, questions } from './content';
-import { Decision, DecisionStatus, ease } from './Decision';
+import { questions } from './content';
+import { Decision, DecisionStatus, Evidence, ease } from './Decision';
 import { DecisionCamera } from './DecisionCamera';
 import { Icon, JourneyRiver, RiverPaths, Terrain } from './graphics';
+import { getRiverContext } from './riverContext';
 import './styles.css';
 
 const storageKey = 'ddl-mvp-01';
-const contextAfter = { purpose: 'IA019', audience: 'IA007', scope: 'IA032' };
 const mapPoints = [
   { x: 180, y: 30 },
   { x: 94, y: 116 },
@@ -85,15 +85,14 @@ function MapDialog({ dialog, active, decisions, openNode, onClose, onExited, red
   );
 }
 
-function RiverGap({ study }) {
-  const context = CAPSULES[study];
+function RiverGap({ id, context }) {
   return (
     <div className="river-gap" aria-hidden={context ? undefined : true}>
       {context && (
-        <aside className="context-pill">
-          <div className="context-kicker"><Icon name="evidence" size={15} /> Contexto</div>
-          <p className="context-title">{context[0]}</p>
-          <p>{context[1]}</p>
+        <aside id={`context-${id}`} className="context-pill" tabIndex={-1} aria-label="Evidencia para seguir">
+          <p className="context-kicker">Evidencia para seguir</p>
+          <Evidence key={context.study} id={context.study} heading="h3" />
+          <p className="context-prompt">{context.prompt}</p>
         </aside>
       )}
     </div>
@@ -133,7 +132,7 @@ function App() {
     setOpenNode(id);
   }
 
-  function revealDecision(id, duration = 0.42) {
+  function revealDecision(id) {
     scrollAnimation.current?.stop();
     const card = document.getElementById(`toggle-${id}`);
     const { top, height } = card.getBoundingClientRect();
@@ -148,18 +147,15 @@ function App() {
       open();
     } else {
       scrollAnimation.current = animate(window.scrollY, target, {
-        duration, ease, onUpdate: scroll, onComplete: open,
+        duration: 0.42, ease, onUpdate: scroll, onComplete: open,
       });
     }
   }
 
-  function closeDecision(nextId) {
+  function closeDecision() {
     const id = openNode;
     setOpenNode(null);
-    requestAnimationFrame(() => {
-      document.getElementById(`toggle-${id}`)?.focus({ preventScroll: true });
-      if (nextId) revealDecision(nextId, 0.54);
-    });
+    requestAnimationFrame(() => document.getElementById(`toggle-${id}`)?.focus({ preventScroll: true }));
   }
 
   function persist(id, value) {
@@ -199,7 +195,14 @@ function App() {
   }
 
   function start() {
-    revealDecision(next ?? questions[0].id);
+    const previous = questions[questions.findIndex((question) => question.id === next) - 1];
+    const target = previous && document.getElementById(`context-${previous.id}`);
+    if (!target) {
+      revealDecision(next ?? questions[0].id);
+      return;
+    }
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: 'center', behavior: reduced ? 'instant' : 'smooth' });
   }
 
   return (
@@ -244,15 +247,17 @@ function App() {
             <div className="journey-header">
               <p className="eyebrow"><span /> MAPA DE DECISIONES</p>
               <h2 id="journey-title">El recorrido</h2>
-              <p>Tocá un nodo para abrirlo.</p>
+              <p>A medida que respondés, el recorrido suma evidencia y preguntas para las decisiones que siguen.</p>
             </div>
             <div className="track">
-              <JourneyRiver />
+              <JourneyRiver decisions={decisions} />
               {questions.map((question, index) => (
                 <Fragment key={question.id}>
                   <Decision question={question} index={index} open={openNode === question.id && !reduced}
                     saved={decisions[question.id]} next={question.id === next} onOpen={() => openDecision(question.id)} />
-                  {index < questions.length - 1 && <RiverGap study={contextAfter[question.id]} />}
+                  {index < questions.length - 1 && (
+                    <RiverGap id={question.id} context={getRiverContext(question.id, decisions[question.id])} />
+                  )}
                 </Fragment>
               ))}
             </div>
@@ -265,7 +270,6 @@ function App() {
       </motion.main>
       {activeIndex >= 0 && (
         <DecisionCamera key={openNode} question={questions[activeIndex]} index={activeIndex} saved={decisions[openNode]}
-          nextQuestion={questions[activeIndex + 1]}
           reduced={reduced} onClosed={closeDecision} status={status}
           onSave={(value) => persist(openNode, value)} onClear={() => persist(openNode, null)} />
       )}

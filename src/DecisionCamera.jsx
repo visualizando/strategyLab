@@ -23,11 +23,10 @@ function atScrollEdge(element, direction) {
   return direction < 0 ? element.scrollTop <= 1 : remaining <= 2;
 }
 
-export function DecisionCamera({ question, index, saved, nextQuestion, reduced, onSave, onClear, onClosed, status }) {
+export function DecisionCamera({ question, index, saved, reduced, onSave, onClear, onClosed, status }) {
   const dialog = useRef(null);
   const [origin] = useState(() => cardFrame(question.id));
   const [destination, setDestination] = useState(null);
-  const nextId = useRef(null);
   const [viewport, setViewport] = useState(null);
   const touch = useRef(null);
   const wheel = useRef({ time: 0, direction: 0, distance: 0 });
@@ -55,9 +54,8 @@ export function DecisionCamera({ question, index, saved, nextQuestion, reduced, 
     };
   }, []);
 
-  function close(next = null) {
+  function close() {
     if (destination) return;
-    nextId.current = next;
     setDestination(cardFrame(question.id));
   }
 
@@ -65,7 +63,7 @@ export function DecisionCamera({ question, index, saved, nextQuestion, reduced, 
     // Keep the page still until the wheel gesture that closed the card has ended.
     const remaining = lastExitWheel.current === null ? 0 : 180 - (performance.now() - lastExitWheel.current);
     if (remaining > 0) closeTimer.current = setTimeout(finishClose, remaining);
-    else onClosed(nextId.current);
+    else onClosed();
   }
 
   function handleWheel(event) {
@@ -129,7 +127,7 @@ export function DecisionCamera({ question, index, saved, nextQuestion, reduced, 
         transition={{ duration: reduced ? 0 : 0.38 }} />
       <motion.div className="camera-frame" initial={reduced ? false : origin}
         animate={destination ?? expanded ?? origin}
-        transition={{ duration: reduced ? 0 : closing && nextId.current ? 0.34 : 0.46, ease }}
+        transition={{ duration: reduced ? 0 : 0.46, ease }}
         onAnimationComplete={() => { if (closing) finishClose(); }}>
         {!reduced && (
           <motion.div className="camera-mini node-toggle" aria-hidden="true" style={{ width: origin.width, height: origin.height }}
@@ -148,9 +146,8 @@ export function DecisionCamera({ question, index, saved, nextQuestion, reduced, 
               <span>{index + 1}. {question.short}</span>
             </div>
           </header>
-          <Controls question={question} saved={saved} nextQuestion={nextQuestion}
-            onSave={onSave} onClear={onClear} onBack={() => close()}
-            onNext={() => close(nextQuestion?.id)} reduced={reduced} />
+          <Controls question={question} saved={saved} onSave={onSave} onClear={onClear}
+            onClose={close} reduced={reduced} />
           <p className={status.startsWith('El navegador') ? 'storage-status' : 'sr-only'} role="status">{status}</p>
         </motion.div>
       </motion.div>

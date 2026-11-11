@@ -4,14 +4,14 @@ import { Icon } from './graphics';
 
 export const ease = [0.22, 1, 0.36, 1];
 
-function Evidence({ id }) {
+export function Evidence({ id, heading: Heading = 'h5' }) {
   const study = STUDIES[id];
   const [title, answer] = CAPSULES[id] ?? [study.ref, study.lesson];
   const source = study.url?.split('](')[0];
 
   return (
     <article className="evidence">
-      <div className="evidence-title"><Icon name="evidence" size={17} /><h5>{title}</h5></div>
+      <div className="evidence-title"><Icon name="evidence" size={17} /><Heading className="evidence-heading">{title}</Heading></div>
       <p>{answer}</p>
       <details>
         <summary><span className="more">Ver más</span><span className="less">Ver menos</span></summary>
@@ -71,7 +71,7 @@ function Branches({ value, onChange, reduced }) {
   );
 }
 
-export function Controls({ question, saved, nextQuestion, onSave, onClear, onBack, onNext, reduced }) {
+export function Controls({ question, saved, onSave, onClear, onClose, reduced }) {
   const { id, title, desc, kind, def, opts, ids } = question;
   const [value, setValue] = useState(saved?.value ?? def);
   const [confidence, setConfidence] = useState(saved?.conf ?? 50);
@@ -83,16 +83,16 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onBac
     onClear();
   }
 
-  function advance(event) {
+  function save(event) {
     event.preventDefault();
     if (changed) onSave({ value, conf: confidence });
-    onNext();
+    onClose();
   }
 
   return (
     <>
       <div className="node-interior">
-        <form id={`${id}-form`} onSubmit={advance}>
+        <form id={`${id}-form`} onSubmit={save}>
           <h2 className="question-title" id={`${id}-question`} tabIndex={-1}>{title}</h2>
           <p className="question-description">{desc}</p>
           {kind === 'range' ? (
@@ -137,9 +137,9 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onBac
       </div>
       <footer className="camera-actions">
         <div className="camera-actions-inner">
-          <button className="camera-back" type="button" onClick={onBack}>{saved ? 'Volver' : 'Decidir luego'}</button>
+          <button className="camera-back" type="button" onClick={onClose}>{saved ? 'Volver' : 'Decidir luego'}</button>
           <button className="primary" type="submit" form={`${id}-form`}>
-            {nextQuestion ? 'Guardar y seguir' : 'Guardar y terminar'}
+            Guardar
           </button>
         </div>
       </footer>

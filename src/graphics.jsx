@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { pairs } from './content';
+import { pairs, questions } from './content';
 
 const paths = {
   river: 'M4 3c11 0 1 7 8 9s9 4 8 9M9 3c9 2 2 6 7 8s7 5 7 10M1 3c0 5 2 8 7 10s8 4 8 8',
@@ -66,7 +66,7 @@ export function RiverPaths({ points }) {
   });
 }
 
-export function JourneyRiver() {
+export function JourneyRiver({ decisions }) {
   const [segments, setSegments] = useState([]);
   const svg = useRef(null);
 
@@ -105,7 +105,7 @@ export function JourneyRiver() {
         const reach = Math.min(88, Math.max(30, height * 0.51)) * (index % 2 ? 1 : -1);
         const d = `M ${from.x} ${from.y} C ${from.x + reach} ${from.y + height * 0.64}, ${to.x - reach} ${to.y - height * 0.59}, ${to.x} ${to.y}`;
         return (
-          <g key={index}>
+          <g key={index} className={index > 0 && decisions[questions[index - 1].id] ? 'river-completed' : undefined}>
             <path className="river-bank" d={d} />
             <path className="river-line" d={d} />
             {(index === 0 || index === segments.length - 1) &&
