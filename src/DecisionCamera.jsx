@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Controls, DecisionLabel, ease } from './Decision';
-import { Icon } from './graphics';
 
 function cardFrame(id) {
   const card = document.getElementById(`toggle-${id}`);
@@ -24,11 +23,12 @@ function atScrollEdge(element, direction) {
   return direction < 0 ? element.scrollTop <= 1 : remaining <= 2;
 }
 
-export function DecisionCamera({ question, index, saved, reduced, onSave, onClear, onClosed, status }) {
+export function DecisionCamera({ question, index, saved, nextQuestion, reduced, onSave, onClear, onClosed, status }) {
   const dialog = useRef(null);
   const back = useRef(null);
   const [origin] = useState(() => cardFrame(question.id));
   const [destination, setDestination] = useState(null);
+  const nextId = useRef(null);
   const [viewport, setViewport] = useState(null);
   const touch = useRef(null);
   const wheel = useRef({ time: 0, direction: 0, distance: 0 });
@@ -56,15 +56,17 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
     };
   }, []);
 
-  function close() {
-    if (!destination) setDestination(cardFrame(question.id));
+  function close(next = null) {
+    if (destination) return;
+    nextId.current = next;
+    setDestination(cardFrame(question.id));
   }
 
   function finishClose() {
     // Keep the page still until the wheel gesture that closed the card has ended.
     const remaining = lastExitWheel.current === null ? 0 : 180 - (performance.now() - lastExitWheel.current);
     if (remaining > 0) closeTimer.current = setTimeout(finishClose, remaining);
-    else onClosed();
+    else onClosed(nextId.current);
   }
 
   function handleWheel(event) {
@@ -107,15 +109,17 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
   }
 
   const closing = destination !== null;
-  const full = viewport && {
-    ...viewport,
-    x: 0, y: 0,
-    borderTopLeftRadius: '0px',
-    borderTopRightRadius: '0px',
-    borderBottomRightRadius: '0px',
-    borderBottomLeftRadius: '0px',
+  const width = viewport && Math.min(viewport.width - 32, 680);
+  const insetY = viewport && Math.min(42, Math.round(viewport.height * 0.05));
+  const expanded = viewport && {
+    width, height: viewport.height - insetY * 2,
+    x: (viewport.width - width) / 2, y: insetY,
+    borderTopLeftRadius: '30px',
+    borderTopRightRadius: '25px',
+    borderBottomRightRadius: '31px',
+    borderBottomLeftRadius: '26px',
     backgroundColor: '#fffaf3',
-    borderColor: '#fffaf3',
+    borderColor: '#b39375',
   };
 
   return (
@@ -125,7 +129,8 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
       <motion.div className="camera-shade" aria-hidden="true" initial={{ opacity: 0 }} animate={{ opacity: closing ? 0 : 1 }}
         transition={{ duration: reduced ? 0 : 0.38 }} />
       <motion.div className="camera-frame" initial={reduced ? false : origin}
-        animate={destination ?? full ?? origin} transition={{ duration: reduced ? 0 : 0.48, ease }}
+        animate={destination ?? expanded ?? origin}
+        transition={{ duration: reduced ? 0 : closing && nextId.current ? 0.34 : 0.46, ease }}
         onAnimationComplete={() => { if (closing) finishClose(); }}>
         {!reduced && (
           <motion.div className="camera-mini node-toggle" aria-hidden="true" style={{ width: origin.width, height: origin.height }}
@@ -134,20 +139,19 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
             <DecisionLabel question={question} index={index} saved={saved} />
           </motion.div>
         )}
-        <motion.div className="camera-scroll" style={viewport ?? undefined} inert={closing}
+        <motion.div className="camera-scroll" style={expanded && { width: expanded.width - 2, height: expanded.height - 2 }} inert={closing}
           initial={{ opacity: reduced ? 1 : 0 }} animate={{ opacity: !closing && viewport ? 1 : 0 }}
-          transition={{ duration: reduced ? 0 : 0.22, delay: closing || reduced ? 0 : 0.13 }}
+          transition={{ duration: reduced ? 0 : 0.21, delay: closing || reduced ? 0 : 0.17 }}
           onWheel={handleWheel} onTouchStart={startTouch} onTouchEnd={endTouch}
           onTouchCancel={() => { touch.current = null; }}>
           <header className="camera-header">
             <div className="camera-header-inner">
-              <button type="button" ref={back} className="camera-back" aria-label="Volver al recorrido" onClick={close}>
-                <Icon name="left" size={22} />
-              </button>
               <span>{index + 1}. {question.short}</span>
+              <button type="button" ref={back} className="camera-back" onClick={() => close()}>Salir</button>
             </div>
           </header>
-          <Controls question={question} saved={saved} onSave={onSave} onClear={onClear} onClose={close} reduced={reduced} />
+          <Controls question={question} saved={saved} nextQuestion={nextQuestion}
+            onSave={onSave} onClear={onClear} onNext={() => close(nextQuestion.id)} reduced={reduced} />
           <p className={status.startsWith('El navegador') ? 'storage-status' : 'sr-only'} role="status">{status}</p>
         </motion.div>
       </motion.div>

@@ -101,8 +101,8 @@ export function JourneyRiver() {
   return (
     <svg className="journey-river" ref={svg} aria-hidden="true">
       {segments.map(([from, to], index) => {
-        const reach = index % 2 ? 34 : -34;
         const height = to.y - from.y;
+        const reach = Math.min(88, Math.max(30, height * 0.51)) * (index % 2 ? 1 : -1);
         const d = `M ${from.x} ${from.y} C ${from.x + reach} ${from.y + height * 0.64}, ${to.x - reach} ${to.y - height * 0.59}, ${to.x} ${to.y}`;
         return (
           <g key={index}>

@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AnimatePresence, animate, motion, useReducedMotion } from 'motion/react';
 import '@fontsource-variable/dm-sans';
-import { questions } from './content';
+import { CAPSULES, questions } from './content';
 import { Decision, ease } from './Decision';
 import { DecisionCamera } from './DecisionCamera';
 import { Icon, JourneyRiver, RiverPaths, Terrain } from './graphics';
 import './styles.css';
 
 const storageKey = 'ddl-mvp-01';
+const contextAfter = { purpose: 'IA019', audience: 'IA007', scope: 'IA032' };
 const mapPoints = [
   { x: 180, y: 30 },
   { x: 94, y: 116 },
@@ -82,6 +83,21 @@ function MapDialog({ dialog, active, decisions, openNode, onClose, onExited, red
   );
 }
 
+function RiverGap({ study }) {
+  const context = CAPSULES[study];
+  return (
+    <div className="river-gap" aria-hidden={context ? undefined : true}>
+      {context && (
+        <aside className="context-pill">
+          <div className="context-kicker"><Icon name="evidence" size={15} /> Contexto</div>
+          <p className="context-title">{context[0]}</p>
+          <p>{context[1]}</p>
+        </aside>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [decisions, setDecisions] = useState(loadDecisions);
   const [openNode, setOpenNode] = useState(null);
@@ -115,7 +131,7 @@ function App() {
     setOpenNode(id);
   }
 
-  function revealDecision(id) {
+  function revealDecision(id, duration = 0.42) {
     scrollAnimation.current?.stop();
     const card = document.getElementById(`toggle-${id}`);
     const { top, height } = card.getBoundingClientRect();
@@ -130,15 +146,18 @@ function App() {
       open();
     } else {
       scrollAnimation.current = animate(window.scrollY, target, {
-        duration: 0.36, ease, onUpdate: scroll, onComplete: open,
+        duration, ease, onUpdate: scroll, onComplete: open,
       });
     }
   }
 
-  function closeDecision() {
+  function closeDecision(nextId) {
     const id = openNode;
     setOpenNode(null);
-    requestAnimationFrame(() => document.getElementById(`toggle-${id}`)?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => {
+      document.getElementById(`toggle-${id}`)?.focus({ preventScroll: true });
+      if (nextId) revealDecision(nextId, 0.54);
+    });
   }
 
   function persist(id, value) {
@@ -228,8 +247,11 @@ function App() {
             <div className="track">
               <JourneyRiver />
               {questions.map((question, index) => (
-                <Decision key={question.id} question={question} index={index} open={openNode === question.id && !reduced}
-                  saved={decisions[question.id]} next={question.id === next} onOpen={() => openDecision(question.id)} />
+                <Fragment key={question.id}>
+                  <Decision question={question} index={index} open={openNode === question.id && !reduced}
+                    saved={decisions[question.id]} next={question.id === next} onOpen={() => openDecision(question.id)} />
+                  {index < questions.length - 1 && <RiverGap study={contextAfter[question.id]} />}
+                </Fragment>
               ))}
             </div>
             <footer className="journey-footer">
@@ -241,6 +263,7 @@ function App() {
       </motion.main>
       {activeIndex >= 0 && (
         <DecisionCamera key={openNode} question={questions[activeIndex]} index={activeIndex} saved={decisions[openNode]}
+          nextQuestion={questions[activeIndex + 1]}
           reduced={reduced} onClosed={closeDecision} status={status}
           onSave={(value) => persist(openNode, value)} onClear={() => persist(openNode, null)} />
       )}

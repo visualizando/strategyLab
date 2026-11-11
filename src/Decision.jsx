@@ -71,7 +71,7 @@ function Branches({ value, onChange, reduced }) {
   );
 }
 
-export function Controls({ question, saved, onSave, onClear, onClose, reduced }) {
+export function Controls({ question, saved, nextQuestion, onSave, onClear, onNext, reduced }) {
   const { id, title, desc, kind, def, opts, ids } = question;
   const [value, setValue] = useState(saved?.value ?? def);
   const [confidence, setConfidence] = useState(saved?.conf ?? 50);
@@ -83,59 +83,73 @@ export function Controls({ question, saved, onSave, onClear, onClose, reduced })
     onClear();
   }
 
+  function advance() {
+    if (changed) onSave({ value, conf: confidence });
+    onNext();
+  }
+
   return (
-    <div className="node-interior">
-      <form onSubmit={(event) => { event.preventDefault(); onSave({ value, conf: confidence }); }}>
-        <h2 className="question-title" id={`${id}-question`}>{title}</h2>
-        <p className="question-description">{desc}</p>
-        {kind === 'range' ? (
-          <>
-            <input className="range tone-range" type="range" min="0" max="100" value={value}
-              aria-labelledby={`${id}-question`} aria-valuetext={`${toneLabel(value)}, ${value} de 100`}
-              style={{ '--fill': `${value}%` }} onChange={(event) => setValue(event.target.valueAsNumber)} />
-            <div className="range-labels"><span>Apocalíptico / riesgo</span><span>Utópico / oportunidad</span></div>
-            <output className="tone-value">{toneLabel(value)} · {value}/100</output>
-          </>
-        ) : (
-          <div className="choices" role="radiogroup" aria-labelledby={`${id}-question`}>
-            {opts.map((option) => (
-              <label key={option} className="choice">
-                <input type="radio" name={id} value={option} checked={option === value}
-                  onChange={() => setValue(option)} />
-                <span>{option}</span>
-              </label>
-            ))}
+    <>
+      <div className="node-interior">
+        <form onSubmit={(event) => { event.preventDefault(); onSave({ value, conf: confidence }); }}>
+          <h2 className="question-title" id={`${id}-question`}>{title}</h2>
+          <p className="question-description">{desc}</p>
+          {kind === 'range' ? (
+            <>
+              <input className="range tone-range" type="range" min="0" max="100" value={value}
+                aria-labelledby={`${id}-question`} aria-valuetext={`${toneLabel(value)}, ${value} de 100`}
+                style={{ '--fill': `${value}%` }} onChange={(event) => setValue(event.target.valueAsNumber)} />
+              <div className="range-labels"><span>Apocalíptico / riesgo</span><span>Utópico / oportunidad</span></div>
+              <output className="tone-value">{toneLabel(value)} · {value}/100</output>
+            </>
+          ) : (
+            <div className="choices" role="radiogroup" aria-labelledby={`${id}-question`}>
+              {opts.map((option) => (
+                <label key={option} className="choice">
+                  <input type="radio" name={id} value={option} checked={option === value}
+                    onChange={() => setValue(option)} />
+                  <span>{option}</span>
+                </label>
+              ))}
+            </div>
+          )}
+          <div className="confidence">
+            <div className="section-head">
+              <label htmlFor={`${id}-confidence`}>¿Qué tan seguro estás de esta decisión?</label>
+              <output htmlFor={`${id}-confidence`}>{confidence}%</output>
+            </div>
+            <input id={`${id}-confidence`} className="range" type="range" min="0" max="100" step="5"
+              value={confidence} aria-valuetext={`${confidence}%`} style={{ '--fill': `${confidence}%` }}
+              onChange={(event) => setConfidence(event.target.valueAsNumber)} />
+            <div className="range-labels"><span>Es una intuición</span><span>Muy fundamentada</span></div>
           </div>
-        )}
-        <div className="confidence">
+          {kind === 'range' && <Branches value={value} onChange={setValue} reduced={reduced} />}
+          <div className="form-actions">
+            <button className="primary" type="submit" disabled={!changed}>
+              {changed ? 'Guardar decisión' : 'Decisión guardada'} {!changed && <Icon name="check" size={17} />}
+            </button>
+            {saved && <button className="quiet" type="button" onClick={clear}>Borrar</button>}
+          </div>
+        </form>
+        <section className="evidence-list" aria-labelledby={`${id}-evidence`}>
           <div className="section-head">
-            <label htmlFor={`${id}-confidence`}>¿Qué tan seguro estás de esta decisión?</label>
-            <output htmlFor={`${id}-confidence`}>{confidence}%</output>
+            <h4 id={`${id}-evidence`}>Cápsulas de evidencia</h4>
+            <span>{ids.length} hallazgos</span>
           </div>
-          <input id={`${id}-confidence`} className="range" type="range" min="0" max="100" step="5"
-            value={confidence} aria-valuetext={`${confidence}%`} style={{ '--fill': `${confidence}%` }}
-            onChange={(event) => setConfidence(event.target.valueAsNumber)} />
-          <div className="range-labels"><span>Es una intuición</span><span>Muy fundamentada</span></div>
-        </div>
-        {kind === 'range' && <Branches value={value} onChange={setValue} reduced={reduced} />}
-        <div className="form-actions">
-          <button className="primary" type="submit" disabled={!changed}>
-            {changed ? 'Guardar decisión' : 'Decisión guardada'} <Icon name={changed ? 'right' : 'check'} size={17} />
-          </button>
-          {saved && <button className="quiet" type="button" onClick={clear}>Borrar</button>}
-        </div>
-      </form>
-      <section className="evidence-list" aria-labelledby={`${id}-evidence`}>
-        <div className="section-head">
-          <h4 id={`${id}-evidence`}>Cápsulas de evidencia</h4>
-          <span>{ids.length} hallazgos</span>
-        </div>
-        {ids.map((study) => <Evidence key={study} id={study} />)}
-      </section>
-      <button type="button" className="close-inline quiet" onClick={onClose}>
-        Volver al recorrido <Icon name="left" size={16} />
-      </button>
-    </div>
+          {ids.map((study) => <Evidence key={study} id={study} />)}
+        </section>
+      </div>
+      {nextQuestion && (
+        <footer className="camera-next">
+          <div className="camera-next-inner">
+            <span className="camera-next-title">{nextQuestion.short}</span>
+            <button className="primary" type="button" onClick={advance}>
+              {changed ? 'Guardar y seguir' : 'Siguiente decisión'}
+            </button>
+          </div>
+        </footer>
+      )}
+    </>
   );
 }
 
@@ -151,7 +165,7 @@ export function DecisionLabel({ question, index, saved }) {
         <span className="node-summary">{summary}</span>
         {saved && <span className="sr-only">Guardada</span>}
       </span>
-      <span className="toggle-icon"><Icon name="right" size={16} /></span>
+      <span className="node-enter">Entrar</span>
     </>
   );
 }
