@@ -64,7 +64,7 @@ function MapDialog({ dialog, active, decisions, openNode, onClose, onExited, red
                 const point = mapPoints[index];
                 const saved = Boolean(decisions[question.id]);
                 return (
-                  <button type="button" key={question.id} className={`map-node${saved ? ' map-saved' : ''}${question.id === openNode ? ' map-current' : ''}`}
+                  <button type="button" key={question.id} className="map-node" data-answer-state={saved ? 'answered' : 'pending'}
                     style={{ left: `${point.x / 3.6}%`, top: `${point.y / 3.2}%` }}
                     aria-current={question.id === openNode ? 'location' : undefined}
                     onClick={() => onClose(question.id)}>
@@ -297,7 +297,7 @@ function App() {
               {questions.map((question, index) => (
                 <Fragment key={question.id}>
                   <Decision question={question} index={index} open={openNode === question.id && !reduced}
-                    saved={decisions[question.id]} next={question.id === next} onOpen={() => openDecision(question.id)} />
+                    saved={decisions[question.id]} onOpen={() => openDecision(question.id)} />
                   {index < questions.length - 1 && (
                     <RiverGap id={question.id} context={getRiverContext(question.id, decisions[question.id])} />
                   )}

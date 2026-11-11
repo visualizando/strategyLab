@@ -154,7 +154,7 @@ export function Controls({ question, saved, onSave, onClear, onClose, reduced })
 }
 
 export function DecisionStatus({ answered }) {
-  return <span className={`decision-status ${answered ? 'is-answered' : 'is-pending'}`}>{answered ? 'Respondida' : 'Pendiente'}</span>;
+  return <span className="decision-status">{answered ? 'Respondida' : 'Pendiente'}</span>;
 }
 
 export function DecisionLabel({ question, index, saved }) {
@@ -166,10 +166,10 @@ export function DecisionLabel({ question, index, saved }) {
 
   return (
     <>
-      <span className={`node-icon${answered ? ' is-saved' : ''}`}><Icon name={answered ? 'check' : id} size={19} /></span>
+      <span className="node-icon"><Icon name={answered ? 'check' : id} size={19} /></span>
       <span className="node-copy">
         <span className="node-title">{index + 1}. {short}</span>
-        <span className={`node-summary${answered ? ' is-saved' : ''}`}>{summary}</span>
+        <span className="node-summary">{summary}</span>
         <DecisionStatus answered={answered} />
       </span>
       <span className="node-enter">{answered ? 'Editar' : 'Entrar'}</span>
@@ -177,11 +177,12 @@ export function DecisionLabel({ question, index, saved }) {
   );
 }
 
-export function Decision({ question, index, open, saved, next, onOpen }) {
+export function Decision({ question, index, open, saved, onOpen }) {
   const { id } = question;
 
   return (
-    <article id={`node-${id}`} className={`node node-${id}${open ? ' is-open' : ''}${next ? ' is-next' : ''}`}>
+    <article id={`node-${id}`} className={`node node-${id}${open ? ' is-open' : ''}`}
+      data-answer-state={saved ? 'answered' : 'pending'}>
       <h3 className="node-heading">
         <button id={`toggle-${id}`} className="node-card node-toggle" type="button"
           aria-haspopup="dialog" onClick={onOpen}>

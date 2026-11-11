@@ -116,7 +116,7 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
     borderBottomRightRadius: '31px',
     borderBottomLeftRadius: '26px',
     backgroundColor: '#fffaf3',
-    borderColor: '#b39375',
+    borderColor: origin.borderColor,
   };
 
   return (
@@ -130,7 +130,8 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
         transition={{ duration: reduced ? 0 : 0.46, ease }}
         onAnimationComplete={() => { if (closing) finishClose(); }}>
         {!reduced && (
-          <motion.div className="camera-mini node-toggle" aria-hidden="true" style={{ width: origin.width, height: origin.height }}
+          <motion.div className="camera-mini node-toggle" aria-hidden="true" data-answer-state={saved ? 'answered' : 'pending'}
+            style={{ width: origin.width, height: origin.height }}
             initial={{ opacity: 1 }} animate={{ opacity: closing || !viewport ? 1 : 0 }}
             transition={{ duration: 0.14, delay: closing ? 0.18 : 0 }}>
             <DecisionLabel question={question} index={index} saved={saved} />
