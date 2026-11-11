@@ -175,6 +175,11 @@ h1 span { color: #39634e; }
 .node-copy { grid-area: copy; display: grid; gap: 5px; }
 .node-title { font-size: clamp(0.98rem, 4.5vw, 1.24rem); line-height: 1.16; letter-spacing: -0.03em; }
 .node-summary { color: var(--muted); font-size: 0.82rem; font-weight: 450; line-height: 1.36; }
+.node-summary.is-saved { color: var(--forest); font-weight: 650; }
+.decision-status { display: inline-block; justify-self: start; width: fit-content; padding: 3px 8px; border-radius: 999px; font-size: 0.69rem; font-weight: 750; line-height: 1.25; }
+.decision-status.is-answered { background: #e3eee1; color: #265340; }
+.decision-status.is-pending { background: #f1e7db; color: #69492e; }
+.node-copy .decision-status { margin-top: 3px; }
 .node-enter { grid-area: enter; padding: 5px 10px; border: 1px solid #a9b8a9; border-radius: 999px; color: var(--forest); font-size: 0.73rem; font-weight: 750; }
 .is-next .node-enter { border-color: #cc9a77; }
 .river-gap { position: relative; min-height: clamp(130px, 35vw, 175px); display: grid; place-items: center; padding: 33px 0; }
@@ -278,6 +283,8 @@ html:has(.map-dialog[open], .camera-dialog[open]) { overflow: hidden; }
 .map-river { position: absolute; inset: 0; width: 100%; height: 100%; }
 .map-node { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 5px; justify-content: center; width: 44%; min-height: 49px; padding: 6px 5px; border: 1px solid #b6cab8; border-radius: 11px; background: #fbfcf5; font-weight: 650; font-size: 0.74rem; line-height: 1.18; }
 .map-node-icon { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; color: #315a44; background: #e3eee1; }
+.map-node-copy { display: grid; justify-items: start; gap: 3px; min-width: 0; text-align: start; }
+.map-node-copy .decision-status { padding: 2px 5px; font-size: 0.62rem; }
 .map-saved, .map-current { border-color: #648c70; }
 .map-current { box-shadow: 0 0 0 2px #99b69e; }
 .map-progress { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid #d0decf; color: var(--muted); font-size: 0.78rem; }

@@ -137,7 +137,7 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onBac
       </div>
       <footer className="camera-actions">
         <div className="camera-actions-inner">
-          <button className="camera-back" type="button" onClick={onBack}>Volver</button>
+          <button className="camera-back" type="button" onClick={onBack}>{saved ? 'Volver' : 'Decidir luego'}</button>
           <button className="primary" type="submit" form={`${id}-form`}>
             {nextQuestion ? 'Guardar y seguir' : 'Guardar y terminar'}
           </button>
@@ -147,19 +147,26 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onBac
   );
 }
 
+export function DecisionStatus({ answered }) {
+  return <span className={`decision-status ${answered ? 'is-answered' : 'is-pending'}`}>{answered ? 'Respondida' : 'Pendiente'}</span>;
+}
+
 export function DecisionLabel({ question, index, saved }) {
   const { id, short, title, kind } = question;
-  const summary = saved ? (kind === 'range' ? toneLabel(saved.value) : saved.value) : title;
+  const answered = Boolean(saved);
+  const summary = answered
+    ? (kind === 'range' ? `${toneLabel(saved.value)} · ${saved.value}/100` : saved.value)
+    : title;
 
   return (
     <>
-      <span className={`node-icon${saved ? ' is-saved' : ''}`}><Icon name={saved ? 'check' : id} size={19} /></span>
+      <span className={`node-icon${answered ? ' is-saved' : ''}`}><Icon name={answered ? 'check' : id} size={19} /></span>
       <span className="node-copy">
         <span className="node-title">{index + 1}. {short}</span>
-        <span className="node-summary">{summary}</span>
-        {saved && <span className="sr-only">Guardada</span>}
+        <span className={`node-summary${answered ? ' is-saved' : ''}`}>{summary}</span>
+        <DecisionStatus answered={answered} />
       </span>
-      <span className="node-enter">Entrar</span>
+      <span className="node-enter">{answered ? 'Editar' : 'Entrar'}</span>
     </>
   );
 }

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { AnimatePresence, animate, motion, useReducedMotion } from 'motion/react';
 import '@fontsource-variable/dm-sans';
 import { CAPSULES, questions } from './content';
-import { Decision, ease } from './Decision';
+import { Decision, DecisionStatus, ease } from './Decision';
 import { DecisionCamera } from './DecisionCamera';
 import { Icon, JourneyRiver, RiverPaths, Terrain } from './graphics';
 import './styles.css';
@@ -69,13 +69,15 @@ function MapDialog({ dialog, active, decisions, openNode, onClose, onExited, red
                     aria-current={question.id === openNode ? 'location' : undefined}
                     onClick={() => onClose(question.id)}>
                     <span className="map-node-icon"><Icon name={saved ? 'check' : question.id} size={16} /></span>
-                    <span>{question.short}</span>
-                    {saved && <span className="sr-only">, guardada</span>}
+                    <span className="map-node-copy">
+                      <span>{question.short}</span>
+                      <DecisionStatus answered={saved} />
+                    </span>
                   </button>
                 );
               })}
             </div>
-            <div className="map-progress"><span /> {count} de {questions.length} decisiones guardadas</div>
+            <div className="map-progress"><span /> {count} de {questions.length} decisiones respondidas</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -228,7 +230,7 @@ function App() {
               <Icon name="down" size={18} />
             </button>
             <div className="progress">
-              <div className="progress-label"><span>TU PROGRESO</span><span aria-live="polite">{count} de {questions.length} guardadas</span></div>
+              <div className="progress-label"><span>TU PROGRESO</span><span aria-live="polite">{count} de {questions.length} respondidas</span></div>
               <div className="progress-bars" aria-hidden="true">
                 {questions.map((question) => <span key={question.id} className={decisions[question.id] ? 'filled' : ''} />)}
               </div>
