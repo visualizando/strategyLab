@@ -73,14 +73,16 @@ function Branches({ value, onChange, reduced }) {
 
 export function Controls({ question, saved, onSave, onClear, onClose, reduced }) {
   const { id, title, desc, kind, def, opts, ids } = question;
+  const heading = useRef(null);
   const [value, setValue] = useState(saved?.value ?? def);
   const [confidence, setConfidence] = useState(saved?.conf ?? 50);
   const changed = saved?.value !== value || saved?.conf !== confidence;
 
-  function clear() {
+  function resetAnswer() {
     setValue(def);
     setConfidence(50);
     onClear();
+    heading.current?.focus();
   }
 
   function save(event) {
@@ -93,8 +95,13 @@ export function Controls({ question, saved, onSave, onClear, onClose, reduced })
     <>
       <div className="node-interior">
         <form id={`${id}-form`} onSubmit={save}>
-          <h2 className="question-title" id={`${id}-question`} tabIndex={-1}>{title}</h2>
+          <h2 className="question-title" id={`${id}-question`} tabIndex={-1} ref={heading}>{title}</h2>
           <p className="question-description">{desc}</p>
+          {saved && (
+            <button className="quiet reset-answer" type="button" onClick={resetAnswer}>
+              Restablecer respuesta
+            </button>
+          )}
           {kind === 'range' ? (
             <>
               <input className="range tone-range" type="range" min="0" max="100" value={value}
@@ -125,7 +132,6 @@ export function Controls({ question, saved, onSave, onClear, onClose, reduced })
             <div className="range-labels"><span>Es una intuición</span><span>Muy fundamentada</span></div>
           </div>
           {kind === 'range' && <Branches value={value} onChange={setValue} reduced={reduced} />}
-          {saved && <button className="quiet clear-decision" type="button" onClick={clear}>Borrar</button>}
         </form>
         <section className="evidence-list" aria-labelledby={`${id}-evidence`}>
           <div className="section-head">

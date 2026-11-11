@@ -165,7 +165,7 @@ function App() {
     setDecisions(updated);
     try {
       localStorage.setItem(storageKey, JSON.stringify(updated));
-      setStatus(value ? 'Decisión guardada en este dispositivo.' : 'Decisión borrada.');
+      setStatus(value ? 'Decisión guardada en este dispositivo.' : 'Respuesta restablecida. La decisión vuelve a estar pendiente.');
     } catch {
       setStatus('El navegador bloqueó el almacenamiento. La decisión queda disponible durante esta sesión.');
     }
