@@ -71,7 +71,7 @@ function Branches({ value, onChange, reduced }) {
   );
 }
 
-export function Controls({ question, saved, nextQuestion, onSave, onClear, onNext, reduced }) {
+export function Controls({ question, saved, nextQuestion, onSave, onClear, onBack, onNext, reduced }) {
   const { id, title, desc, kind, def, opts, ids } = question;
   const [value, setValue] = useState(saved?.value ?? def);
   const [confidence, setConfidence] = useState(saved?.conf ?? 50);
@@ -83,7 +83,8 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onNex
     onClear();
   }
 
-  function advance() {
+  function advance(event) {
+    event.preventDefault();
     if (changed) onSave({ value, conf: confidence });
     onNext();
   }
@@ -91,8 +92,8 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onNex
   return (
     <>
       <div className="node-interior">
-        <form onSubmit={(event) => { event.preventDefault(); onSave({ value, conf: confidence }); }}>
-          <h2 className="question-title" id={`${id}-question`}>{title}</h2>
+        <form id={`${id}-form`} onSubmit={advance}>
+          <h2 className="question-title" id={`${id}-question`} tabIndex={-1}>{title}</h2>
           <p className="question-description">{desc}</p>
           {kind === 'range' ? (
             <>
@@ -124,12 +125,7 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onNex
             <div className="range-labels"><span>Es una intuición</span><span>Muy fundamentada</span></div>
           </div>
           {kind === 'range' && <Branches value={value} onChange={setValue} reduced={reduced} />}
-          <div className="form-actions">
-            <button className="primary" type="submit" disabled={!changed}>
-              {changed ? 'Guardar decisión' : 'Decisión guardada'} {!changed && <Icon name="check" size={17} />}
-            </button>
-            {saved && <button className="quiet" type="button" onClick={clear}>Borrar</button>}
-          </div>
+          {saved && <button className="quiet clear-decision" type="button" onClick={clear}>Borrar</button>}
         </form>
         <section className="evidence-list" aria-labelledby={`${id}-evidence`}>
           <div className="section-head">
@@ -139,16 +135,14 @@ export function Controls({ question, saved, nextQuestion, onSave, onClear, onNex
           {ids.map((study) => <Evidence key={study} id={study} />)}
         </section>
       </div>
-      {nextQuestion && (
-        <footer className="camera-next">
-          <div className="camera-next-inner">
-            <span className="camera-next-title">{nextQuestion.short}</span>
-            <button className="primary" type="button" onClick={advance}>
-              {changed ? 'Guardar y seguir' : 'Siguiente decisión'}
-            </button>
-          </div>
-        </footer>
-      )}
+      <footer className="camera-actions">
+        <div className="camera-actions-inner">
+          <button className="camera-back" type="button" onClick={onBack}>Volver</button>
+          <button className="primary" type="submit" form={`${id}-form`}>
+            {nextQuestion ? 'Guardar y seguir' : 'Guardar y terminar'}
+          </button>
+        </div>
+      </footer>
     </>
   );
 }

@@ -25,7 +25,6 @@ function atScrollEdge(element, direction) {
 
 export function DecisionCamera({ question, index, saved, nextQuestion, reduced, onSave, onClear, onClosed, status }) {
   const dialog = useRef(null);
-  const back = useRef(null);
   const [origin] = useState(() => cardFrame(question.id));
   const [destination, setDestination] = useState(null);
   const nextId = useRef(null);
@@ -38,7 +37,7 @@ export function DecisionCamera({ question, index, saved, nextQuestion, reduced, 
   useLayoutEffect(() => {
     const surface = dialog.current;
     surface.showModal();
-    back.current?.focus({ preventScroll: true });
+    surface.querySelector('.question-title')?.focus({ preventScroll: true });
     const measure = () => {
       const width = window.innerWidth;
       const height = surface.clientHeight;
@@ -147,11 +146,11 @@ export function DecisionCamera({ question, index, saved, nextQuestion, reduced, 
           <header className="camera-header">
             <div className="camera-header-inner">
               <span>{index + 1}. {question.short}</span>
-              <button type="button" ref={back} className="camera-back" onClick={() => close()}>Salir</button>
             </div>
           </header>
           <Controls question={question} saved={saved} nextQuestion={nextQuestion}
-            onSave={onSave} onClear={onClear} onNext={() => close(nextQuestion.id)} reduced={reduced} />
+            onSave={onSave} onClear={onClear} onBack={() => close()}
+            onNext={() => close(nextQuestion?.id)} reduced={reduced} />
           <p className={status.startsWith('El navegador') ? 'storage-status' : 'sr-only'} role="status">{status}</p>
         </motion.div>
       </motion.div>
