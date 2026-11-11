@@ -99,19 +99,59 @@ function RiverGap({ id, context }) {
   );
 }
 
+function Progress({ decisions, compact = false, announce = false }) {
+  const count = Object.keys(decisions).length;
+  const tally = <span aria-live={announce ? 'polite' : undefined}>{count} de {questions.length} respondidas</span>;
+
+  return (
+    <div className={compact ? 'compact-progress' : 'progress'}>
+      {compact ? tally : <div className="progress-label"><span>TU PROGRESO</span>{tally}</div>}
+      <div className="progress-bars" aria-hidden="true">
+        {questions.map((question) => <span key={question.id} className={decisions[question.id] ? 'filled' : ''} />)}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [decisions, setDecisions] = useState(loadDecisions);
   const [openNode, setOpenNode] = useState(null);
   const [showMap, setShowMap] = useState(false);
+  const [showProgress, setShowProgress] = useState(false);
   const [status, setStatus] = useState('');
   const reduced = useReducedMotion();
   const dialog = useRef(null);
+  const header = useRef(null);
+  const hero = useRef(null);
   const mapDestination = useRef(null);
   const mapTrigger = useRef(null);
   const scrollAnimation = useRef(null);
   const count = Object.keys(decisions).length;
   const next = questions.find((question) => !decisions[question.id])?.id;
   const activeIndex = questions.findIndex((question) => question.id === openNode);
+
+  useEffect(() => {
+    const headerElement = header.current;
+    const heroElement = hero.current;
+    let observer;
+    const watchHero = () => {
+      observer?.disconnect();
+      observer = new IntersectionObserver(([entry]) => {
+        setShowProgress(!entry.isIntersecting && entry.boundingClientRect.bottom < headerElement.offsetHeight);
+      }, {
+        rootMargin: `-${headerElement.offsetHeight}px 0px 0px 0px`,
+      });
+      observer.observe(heroElement);
+      setShowProgress(heroElement.getBoundingClientRect().bottom < headerElement.offsetHeight);
+    };
+    const resize = new ResizeObserver(watchHero);
+    resize.observe(headerElement);
+    watchHero();
+    return () => {
+      resize.disconnect();
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const stop = () => scrollAnimation.current?.stop();
@@ -208,7 +248,7 @@ function App() {
   return (
     <>
       <a href="#recorrido" className="skip">Ir al recorrido</a>
-      <header className="site-header">
+      <header className="site-header" ref={header}>
         <div className="header-inner">
           <a className="brand" href="#inicio">
             <span className="brand-icon"><Icon name="river" size={21} /></span>
@@ -218,11 +258,19 @@ function App() {
             <Icon name="map" size={18} /><span>Ver mapa</span>
           </button>
         </div>
+        <AnimatePresence initial={false}>
+          {showProgress && (
+            <motion.div className="sticky-progress" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }} transition={{ duration: reduced ? 0 : 0.18 }}>
+              <Progress decisions={decisions} compact announce={!openNode && !showMap} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <motion.main id="inicio" className="workspace" animate={{ opacity: showMap ? 0.72 : 1 }}
         transition={{ duration: reduced ? 0 : 0.35 }}>
-        <section className="intro" aria-labelledby="page-title">
+        <section className="intro" ref={hero} aria-labelledby="page-title">
           <div className="intro-inner">
             <div className="intro-art"><Terrain /></div>
             <p className="eyebrow"><span /> LABORATORIO DOCUMENTAL</p>
@@ -232,12 +280,7 @@ function App() {
               {count === 0 ? 'Empezar recorrido' : count === questions.length ? 'Revisar decisiones' : 'Continuar recorrido'}
               <Icon name="down" size={18} />
             </button>
-            <div className="progress">
-              <div className="progress-label"><span>TU PROGRESO</span><span aria-live="polite">{count} de {questions.length} respondidas</span></div>
-              <div className="progress-bars" aria-hidden="true">
-                {questions.map((question) => <span key={question.id} className={decisions[question.id] ? 'filled' : ''} />)}
-              </div>
-            </div>
+            <Progress decisions={decisions} announce={!showProgress && !openNode && !showMap} />
           </div>
         </section>
 
@@ -270,6 +313,7 @@ function App() {
       </motion.main>
       {activeIndex >= 0 && (
         <DecisionCamera key={openNode} question={questions[activeIndex]} index={activeIndex} saved={decisions[openNode]}
+          progress={showProgress && <Progress decisions={decisions} compact />}
           reduced={reduced} onClosed={closeDecision} status={status}
           onSave={(value) => persist(openNode, value)} onClear={() => persist(openNode, null)} />
       )}

@@ -23,7 +23,7 @@ function atScrollEdge(element, direction) {
   return direction < 0 ? element.scrollTop <= 1 : remaining <= 2;
 }
 
-export function DecisionCamera({ question, index, saved, reduced, onSave, onClear, onClosed, status }) {
+export function DecisionCamera({ question, index, saved, reduced, onSave, onClear, onClosed, status, progress }) {
   const dialog = useRef(null);
   const [origin] = useState(() => cardFrame(question.id));
   const [destination, setDestination] = useState(null);
@@ -136,7 +136,8 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
             <DecisionLabel question={question} index={index} saved={saved} />
           </motion.div>
         )}
-        <motion.div className="camera-scroll" style={expanded && { width: expanded.width - 2, height: expanded.height - 2 }} inert={closing}
+        <motion.div className={`camera-scroll${progress ? ' has-progress' : ''}`}
+          style={expanded && { width: expanded.width - 2, height: expanded.height - 2 }} inert={closing}
           initial={{ opacity: reduced ? 1 : 0 }} animate={{ opacity: !closing && viewport ? 1 : 0 }}
           transition={{ duration: reduced ? 0 : 0.21, delay: closing || reduced ? 0 : 0.17 }}
           onWheel={handleWheel} onTouchStart={startTouch} onTouchEnd={endTouch}
@@ -145,6 +146,7 @@ export function DecisionCamera({ question, index, saved, reduced, onSave, onClea
             <div className="camera-header-inner">
               <span>{index + 1}. {question.short}</span>
             </div>
+            {progress}
           </header>
           <Controls question={question} saved={saved} onSave={onSave} onClear={onClear}
             onClose={close} reduced={reduced} />

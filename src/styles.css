@@ -11,6 +11,7 @@
   --sage: #e5eee4;
   --outline: #bacbbd;
   --header: 60px;
+  --progress-height: 34px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -70,7 +71,8 @@ h1, h2, h3, h4, h5, p { margin: 0; }
 
 .workspace, .map-dialog { user-select: none; -webkit-user-select: none; }
 .workspace { max-width: 48rem; margin-inline: auto; }
-#inicio, #recorrido, .node { scroll-margin-top: calc(var(--header) + 14px); }
+#inicio { scroll-margin-top: calc(var(--header) + 14px); }
+#recorrido, .node { scroll-margin-top: calc(var(--header) + var(--progress-height) + 14px); }
 .intro { position: relative; isolation: isolate; }
 .intro-inner { position: relative; isolation: isolate; padding: 40px 22px 31px; text-align: center; }
 .intro-inner .eyebrow, .journey-header .eyebrow { justify-content: center; }
@@ -113,6 +115,10 @@ h1 span { color: #39634e; }
 .progress-bars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 7px; }
 .progress-bars > span { height: 4px; border-radius: 8px; background: #d8e2d6; }
 .progress-bars > .filled { background: #4f8063; }
+.sticky-progress { position: absolute; inset: 100% 0 auto; background: var(--paper); border-bottom: 1px solid #e8dece; box-shadow: 0 4px 9px #4533220b; }
+.compact-progress { display: flex; align-items: center; gap: 14px; min-height: var(--progress-height); max-width: 48rem; margin-inline: auto; padding: 5px max(18px, env(safe-area-inset-right)) 5px max(18px, env(safe-area-inset-left)); color: var(--forest); font-size: 0.75rem; font-weight: 750; }
+.compact-progress > span { font-variant-numeric: tabular-nums; }
+.compact-progress .progress-bars { flex: 1 1 6rem; margin: 0; }
 
 .journey {
   position: relative;
@@ -269,6 +275,8 @@ html:has(.map-dialog[open], .camera-dialog[open]) { overflow: hidden; }
 .camera-scroll { position: absolute; inset: 0 auto auto 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior-y: none; scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: #aeb6a7 transparent; scroll-padding-block: 62px 72px; }
 .camera-header, .camera-actions { position: sticky; z-index: 1; background: var(--paper); }
 .camera-header { top: 0; border-bottom: 1px solid #ede1d2; }
+.camera-header .compact-progress { padding-inline: 16px; border-top: 1px solid #ede1d2; }
+.camera-scroll.has-progress { scroll-padding-top: calc(62px + var(--progress-height)); }
 .camera-header-inner, .camera-actions-inner { display: flex; align-items: center; gap: 10px; min-height: 52px; max-width: 40rem; margin-inline: auto; padding: 5px 16px; font-size: 0.87rem; font-weight: 750; }
 .camera-back { min-height: 44px; padding-inline: 15px; border: 1px solid #bfcbbf; border-radius: 999px; color: var(--forest); background: transparent; }
 .camera-actions { bottom: 0; border-top: 1px solid #ede1d2; }
