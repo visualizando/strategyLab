@@ -118,15 +118,12 @@ h1 span { color: #39634e; }
 .sticky-progress { position: absolute; inset: 100% 0 auto; background: var(--paper); border-bottom: 1px solid #e8dece; box-shadow: 0 4px 9px #4533220b; }
 .compact-progress { display: grid; align-content: center; min-height: var(--progress-height); max-width: 48rem; margin-inline: auto; padding: 4px max(18px, env(safe-area-inset-right)) 0 max(18px, env(safe-area-inset-left)); color: var(--forest); font-size: 0.75rem; font-weight: 750; }
 .compact-progress > span { font-variant-numeric: tabular-nums; }
-.progress-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%; max-width: 26rem; margin: 0; padding: 0; list-style: none; }
+.progress-steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; width: 100%; max-width: 26rem; margin: 0; padding: 0; list-style: none; }
 .progress-step { display: grid; min-height: 44px; place-items: center; border-radius: 8px; color: var(--forest); text-decoration: none; }
-.progress-step > span { position: relative; display: grid; place-items: center; width: 30px; height: 30px; padding-bottom: 3px; border: 1px solid transparent; border-radius: 50%; background: #f1e7db; color: #69492e; }
-.progress-step > span::after { position: absolute; bottom: 4px; width: 9px; height: 2px; border-radius: 2px; background: #917963; content: ''; }
+.progress-step > span { display: grid; place-items: center; width: 100%; min-height: 19px; border: 2px solid transparent; border-radius: 4px; background: #f1e7db; color: #69492e; font-size: 0.69rem; line-height: 1; }
 .progress-step[data-answered] > span { background: #e0eddf; color: #265340; }
-.progress-step[data-answered] > span::after { background: #396e51; }
-.progress-step[aria-current="location"] > span { border: 2px solid var(--forest); }
+.progress-step[aria-current="location"] > span { border-color: var(--forest); }
 .progress-step[data-open] > span { background: var(--forest); color: var(--paper); }
-.progress-step[data-open] > span::after { background: var(--paper); }
 .progress-step:focus-visible { outline-offset: -2px; }
 
 .journey {
