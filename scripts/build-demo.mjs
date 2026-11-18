@@ -24,5 +24,5 @@ const html = index
   .replace(script[0], () => `<script type="module">${js.replace(/<\/script/gi, '<\\/script')}</script>`)
   .replace(stylesheet[0], () => `<style>${css}</style>`);
 
-writeFileSync(new URL('rio-editorial.html', output), html);
-console.log(`Demo autónoma: ${resolve('dist/rio-editorial.html')}`);
+writeFileSync(new URL('strategy-lab.html', output), html);
+console.log(`Demo autónoma: ${resolve('dist/strategy-lab.html')}`);

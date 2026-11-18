@@ -1,4 +1,4 @@
-# AI Documentary Strategy Lab · Río editorial
+# AI Documentary Strategy Lab
 
 Demo mobile-first en React, Motion y SVG. Las decisiones y sus niveles de certeza se guardan en el navegador.
 
@@ -13,7 +13,7 @@ npm run dev
 
 Para abrirla en un teléfono conectado a la misma red, usá la URL `Network` que imprime Vite. Para generar la versión estática, ejecutá `npm run build`. El resultado queda en `dist/`.
 
-Para regenerar el HTML autónomo, ejecutá `npm run build:demo` y abrí `dist/rio-editorial.html` en el navegador. Para probar el guardado en el teléfono, usá la URL de red del servidor Vite.
+Para regenerar el HTML autónomo, ejecutá `npm run build:demo` y abrí `dist/strategy-lab.html` en el navegador. Para probar el guardado en el teléfono, usá la URL de red del servidor Vite.
 
 ## GitHub Pages
 

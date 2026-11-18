@@ -85,14 +85,12 @@ function MapDialog({ dialog, active, decisions, openNode, onClose, onExited, red
   );
 }
 
-function RiverGap({ id, context }) {
+function RiverGap({ id, study }) {
   return (
-    <div className="river-gap" aria-hidden={context ? undefined : true}>
-      {context && (
-        <aside id={`context-${id}`} className="context-pill" tabIndex={-1} aria-label="Evidencia para seguir">
-          <p className="context-kicker">Evidencia para seguir</p>
-          <Evidence key={context.study} id={context.study} heading="h3" />
-          <p className="context-prompt">{context.prompt}</p>
+    <div className="river-gap" aria-hidden={study ? undefined : true}>
+      {study && (
+        <aside id={`context-${id}`} className="context-pill" tabIndex={-1} aria-label="Cápsula de investigación">
+          <Evidence key={study} id={study} heading="h3" />
         </aside>
       )}
     </div>
@@ -347,9 +345,7 @@ function App() {
         <section className="intro" ref={hero} aria-labelledby="page-title">
           <div className="intro-inner">
             <div className="intro-art"><Terrain /></div>
-            <p className="eyebrow"><span /> LABORATORIO DOCUMENTAL</p>
-            <h1 id="page-title">Río <span>editorial</span></h1>
-            <p className="intro-text">Seis decisiones para definir la estrategia de tu documental sobre inteligencia artificial, con evidencia para orientar cada elección.</p>
+            <h1 id="page-title">AI Documentary Strategy Lab</h1>
             <button type="button" className="primary start" onClick={start}>
               {count === 0 ? 'Empezar recorrido' : count === questions.length ? 'Revisar decisiones' : 'Continuar recorrido'}
               <Icon name="down" size={18} />
@@ -362,9 +358,7 @@ function App() {
           <div className="journey-art"><Terrain /></div>
           <div className="journey-inner">
             <div className="journey-header">
-              <p className="eyebrow"><span /> MAPA DE DECISIONES</p>
-              <h2 id="journey-title">El recorrido</h2>
-              <p>A medida que respondés, el recorrido suma evidencia y preguntas para las decisiones que siguen.</p>
+              <h2 id="journey-title">Decisiones</h2>
             </div>
             <div className="track" ref={track}>
               <JourneyRiver decisions={decisions} />
@@ -373,13 +367,12 @@ function App() {
                   <Decision question={question} index={index} open={openNode === question.id && !reduced}
                     saved={decisions[question.id]} onOpen={() => openDecision(question.id)} />
                   {index < questions.length - 1 && (
-                    <RiverGap id={question.id} context={getRiverContext(question.id, decisions[question.id])} />
+                    <RiverGap id={question.id} study={getRiverContext(question.id, decisions[question.id])} />
                   )}
                 </Fragment>
               ))}
             </div>
             <footer className="journey-footer">
-              <span><Icon name="river" size={17} /> Río editorial</span>
               <button type="button" className="quiet" onClick={openMap}>Ver mapa completo <Icon name="map" size={17} /></button>
             </footer>
           </div>

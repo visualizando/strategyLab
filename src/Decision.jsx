@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { alternatives, CAPSULES, STUDIES, toneLabel } from './content';
 import { Icon } from './graphics';
+import { CapsuleExamples } from './CapsuleExamples';
 
 export const ease = [0.22, 1, 0.36, 1];
 
@@ -11,6 +12,7 @@ export function Evidence({ id, heading: Heading = 'h5' }) {
 
   return (
     <article className="evidence">
+      <div className="capsule-meta"><span className="capsule-category">Investigación</span></div>
       <div className="evidence-title"><Icon name="evidence" size={17} /><Heading className="evidence-heading">{title}</Heading></div>
       <p>{answer}</p>
       <details>
@@ -135,10 +137,10 @@ export function Controls({ question, saved, onSave, onClear, onClose, reduced })
         </form>
         <section className="evidence-list" aria-labelledby={`${id}-evidence`}>
           <div className="section-head">
-            <h4 id={`${id}-evidence`}>Cápsulas de evidencia</h4>
-            <span>{ids.length} hallazgos</span>
+            <h4 id={`${id}-evidence`}>Cápsulas</h4>
           </div>
           {ids.map((study) => <Evidence key={study} id={study} />)}
+          {id === 'audience' && <CapsuleExamples />}
         </section>
       </div>
       <footer className="camera-actions">
