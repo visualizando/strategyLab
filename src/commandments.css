@@ -134,6 +134,13 @@
   padding-inline-start: 1.65rem;
 }
 
+.commandments-summary {
+  margin-top: 8px;
+  max-width: 55ch;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .commandments-list li {
   padding: 14px 0 14px 6px;
   border-bottom: 1px solid var(--outline);

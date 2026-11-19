@@ -90,3 +90,53 @@ export const commandments = [
     ],
   },
 ];
+
+const profiles = {
+  archive: {
+    title: 'El archivo manda',
+    summary: 'Tu manifiesto pone el acento en cuidar el material original, su procedencia y lo que puede sostener como evidencia.',
+  },
+  craft: {
+    title: 'La IA entra en montaje',
+    summary: 'Tu manifiesto abre espacio para experimentar con IA y decidir qué aporta al lenguaje de la película.',
+  },
+  people: {
+    title: 'La última palabra es humana',
+    summary: 'Tu manifiesto pone en primer plano las decisiones del equipo y la voz de quienes aparecen en la película.',
+  },
+  audience: {
+    title: 'Nada fuera de cuadro',
+    summary: 'Tu manifiesto le da peso a que el público pueda reconocer qué se hizo con IA y entender cómo se usó.',
+  },
+};
+
+// Each row follows the order of the three answers shown for that topic.
+const profileByAnswer = {
+  'Propósito': ['archive', 'craft', 'craft'],
+  'Autoría': ['people', 'people', 'people'],
+  'Consentimiento': ['archive', 'people', 'people'],
+  'Archivo y derechos': ['archive', 'archive', 'craft'],
+  'Investigación': ['craft', 'archive', 'archive'],
+  'Reconstrucciones': ['archive', 'craft', 'audience'],
+  'Privacidad': ['archive', 'people', 'people'],
+  'Sesgos y representación': ['archive', 'people', 'people'],
+  'Trabajo y créditos': ['people', 'craft', 'people'],
+  'Transparencia': ['archive', 'audience', 'audience'],
+};
+
+export function getManifiestoProfile(answers) {
+  const scores = { archive: 0, craft: 0, people: 0, audience: 0 };
+  for (const [index, { topic }] of commandments.entries()) {
+    const profile = profileByAnswer[topic][answers[index]];
+    // An explicit commitment to label or explain synthetic material weighs more.
+    scores[profile] += profile === 'audience' ? 2 : 1;
+  }
+  const highest = Math.max(...Object.values(scores));
+  const leading = Object.keys(scores).filter((profile) => scores[profile] === highest);
+  if (leading.length === 1) return profiles[leading[0]];
+
+  return {
+    title: 'Entre el archivo y el algoritmo',
+    summary: 'Tu manifiesto combina varias prioridades. Las decisiones sobre la IA cambian según lo que necesita cada escena.',
+  };
+}

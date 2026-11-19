@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon, Terrain } from './graphics';
-import { commandments } from './commandments.js';
+import { commandments, getManifiestoProfile } from './commandments.js';
 import './commandments.css';
 
 const storageKey = 'ddl-commandments-v1';
@@ -31,6 +31,7 @@ export function Commandments() {
   const heading = useRef(null);
   const previousStep = useRef(step);
   const finished = step === total;
+  const profile = finished ? getManifiestoProfile(answers) : null;
   const current = commandments[step];
   const labUrl = window.location.pathname;
 
@@ -58,7 +59,7 @@ export function Commandments() {
     const lines = commandments.map(({ topic, options }, index) =>
       `${index + 1}. ${topic}\n${options[answers[index]][1]}`);
     try {
-      await navigator.clipboard.writeText(['Tus 10 mandamientos', ...lines].join('\n\n'));
+      await navigator.clipboard.writeText([profile.title, 'Mis 10 mandamientos sobre IA', profile.summary, ...lines].join('\n\n'));
       setNotice('Copiaste tus 10 mandamientos.');
     } catch {
       setNotice('Podés seleccionar y copiar el texto desde la lista.');
@@ -97,10 +98,11 @@ export function Commandments() {
             ))}
           </div>
           <h2 id="commandments-heading" ref={heading} tabIndex={-1}>
-            {finished ? 'Mis principios para filmar con IA' : current.question}
+            {finished ? profile.title : current.question}
           </h2>
           {finished ? (
             <>
+              <p className="commandments-summary">{profile.summary}</p>
               <ol className="commandments-list">
                 {commandments.map(({ topic, options }, index) => (
                   <li key={topic}><strong>{topic}</strong><p>{options[answers[index]][1]}</p></li>
