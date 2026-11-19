@@ -5,6 +5,7 @@ import '@fontsource-variable/dm-sans';
 import { questions } from './content';
 import { Decision, DecisionStatus, Evidence, ease } from './Decision';
 import { DecisionCamera } from './DecisionCamera';
+import { Commandments } from './Commandments.jsx';
 import { Icon, JourneyRiver, RiverPaths, Terrain } from './graphics';
 import { getRiverContext } from './riverContext';
 import './styles.css';
@@ -350,6 +351,7 @@ function App() {
               {count === 0 ? 'Empezar recorrido' : count === questions.length ? 'Revisar decisiones' : 'Continuar recorrido'}
               <Icon name="down" size={18} />
             </button>
+            <a className="commandments-entry" href="?vista=mandamientos">Creá tus 10 mandamientos sobre IA</a>
             <Progress decisions={decisions} announce={!showProgress && !openNode && !showMap} />
           </div>
         </section>
@@ -392,4 +394,6 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+const isCommandments = new URLSearchParams(window.location.search).get('vista') === 'mandamientos';
+if (isCommandments) document.title = 'Tus 10 mandamientos | AI Documentary Strategy Lab';
+createRoot(document.getElementById('root')).render(isCommandments ? <Commandments /> : <App />);
