@@ -8,6 +8,7 @@ import { DecisionCamera } from './DecisionCamera';
 import { Commandments } from './Commandments.jsx';
 import { Icon, JourneyRiver, RiverPaths, Terrain } from './graphics';
 import { getRiverContext } from './riverContext';
+import { CapsuleExamples } from './CapsuleExamples';
 import './styles.css';
 
 const storageKey = 'ddl-mvp-01';
@@ -87,13 +88,15 @@ function MapDialog({ dialog, active, decisions, openNode, onClose, onExited, red
 }
 
 function RiverGap({ id, study }) {
+  const examples = id === 'audience';
   return (
-    <div className="river-gap" aria-hidden={study ? undefined : true}>
+    <div className="river-gap" aria-hidden={study || examples ? undefined : true}>
       {study && (
         <aside id={`context-${id}`} className="context-pill" tabIndex={-1} aria-label="Cápsula de investigación">
           <Evidence key={study} id={study} heading="h3" />
         </aside>
       )}
+      {examples && <div className="gap-examples"><CapsuleExamples heading="h3" /></div>}
     </div>
   );
 }
