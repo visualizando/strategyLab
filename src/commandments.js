@@ -91,52 +91,93 @@ export const commandments = [
   },
 ];
 
-const profiles = {
-  archive: {
+// Criteria are [topic, zero-based answer index], from most to least important.
+// Every profile has the same maximum score, and one answer can support multiple profiles.
+const weights = [5, 4, 3, 2, 1];
+const profiles = [
+  {
     title: 'El archivo manda',
-    summary: 'Tu manifiesto pone el acento en cuidar el material original, su procedencia y lo que puede sostener como evidencia.',
+    summary: 'El material original marca el límite de lo que puede afirmar tu película. La procedencia, los permisos y la comparación con las fuentes pesan en las decisiones de montaje.',
+    criteria: [['Archivo y derechos', 0], ['Investigación', 2], ['Sesgos y representación', 0], ['Reconstrucciones', 0], ['Autoría', 0]],
   },
-  craft: {
-    title: 'La IA entra en montaje',
-    summary: 'Tu manifiesto abre espacio para experimentar con IA y decidir qué aporta al lenguaje de la película.',
+  {
+    title: 'El hueco también cuenta',
+    summary: 'Cuando falta un registro, el vacío puede ser parte de la escena. El sonido, el testimonio y el montaje te permiten contar lo que se sabe y dejar abierta la pregunta por lo que falta.',
+    criteria: [['Reconstrucciones', 0], ['Consentimiento', 0], ['Propósito', 1], ['Investigación', 0], ['Trabajo y créditos', 2]],
   },
-  people: {
-    title: 'La última palabra es humana',
-    summary: 'Tu manifiesto pone en primer plano las decisiones del equipo y la voz de quienes aparecen en la película.',
+  {
+    title: 'Del indicio a la prueba',
+    summary: 'La IA puede abrir una pista, pero la afirmación llega al corte después de pasar por la fuente original. Tu método deja un rastro de documentos, citas y permisos que el equipo puede revisar.',
+    criteria: [['Investigación', 1], ['Archivo y derechos', 1], ['Transparencia', 1], ['Sesgos y representación', 0], ['Autoría', 1]],
   },
-  audience: {
-    title: 'Nada fuera de cuadro',
-    summary: 'Tu manifiesto le da peso a que el público pueda reconocer qué se hizo con IA y entender cómo se usó.',
+  {
+    title: 'El corte final es del equipo',
+    summary: 'Tu política de IA también es una política de trabajo. El equipo editorial discute qué delegar, define quién aprueba cada aporte y acuerda cómo reconocer el trabajo en los créditos.',
+    criteria: [['Autoría', 1], ['Trabajo y créditos', 0], ['Propósito', 1], ['Privacidad', 1], ['Transparencia', 0]],
   },
-};
-
-// Each row follows the order of the three answers shown for that topic.
-const profileByAnswer = {
-  'Propósito': ['archive', 'craft', 'craft'],
-  'Autoría': ['people', 'people', 'people'],
-  'Consentimiento': ['archive', 'people', 'people'],
-  'Archivo y derechos': ['archive', 'archive', 'craft'],
-  'Investigación': ['craft', 'archive', 'archive'],
-  'Reconstrucciones': ['archive', 'craft', 'audience'],
-  'Privacidad': ['archive', 'people', 'people'],
-  'Sesgos y representación': ['archive', 'people', 'people'],
-  'Trabajo y créditos': ['people', 'craft', 'people'],
-  'Transparencia': ['archive', 'audience', 'audience'],
-};
+  {
+    title: 'Mi voz tiene voz y voto',
+    summary: 'Una recreación de voz o rostro es una decisión que compartís con la persona retratada. El permiso tiene un uso concreto y la revisión de la escena forma parte del acuerdo.',
+    criteria: [['Consentimiento', 2], ['Autoría', 2], ['Sesgos y representación', 2], ['Privacidad', 1], ['Archivo y derechos', 0]],
+  },
+  {
+    title: 'El contexto pide otra toma',
+    summary: 'Tu película busca una segunda mirada de alguien que conozca el mundo retratado. Esa revisión tiene consecuencias en el corte cuando aparecen sesgos, simplificaciones o errores de contexto.',
+    criteria: [['Sesgos y representación', 1], ['Autoría', 2], ['Investigación', 2], ['Trabajo y créditos', 1], ['Transparencia', 1]],
+  },
+  {
+    title: 'Los brutos se quedan en casa',
+    summary: 'El cuidado empieza antes de subir un archivo. Tu flujo reserva las entrevistas y los brutos sensibles, y acota las pruebas de IA a materiales que el equipo puede usar y controlar.',
+    criteria: [['Privacidad', 0], ['Archivo y derechos', 2], ['Propósito', 0], ['Consentimiento', 0], ['Trabajo y créditos', 2]],
+  },
+  {
+    title: 'La IA entra por la sala de máquinas',
+    summary: 'Le das a la IA un lugar en la trastienda, para ordenar, transcribir y preparar materiales. El equipo acuerda esas tareas y conserva el control de las decisiones que le dan forma a la película.',
+    criteria: [['Propósito', 0], ['Trabajo y créditos', 2], ['Privacidad', 1], ['Autoría', 0], ['Investigación', 0]],
+  },
+  {
+    title: 'Ensayo antes del estreno',
+    summary: 'La IA entra primero en una prueba acotada. Usás materiales preparados para experimentar y el equipo decide si el resultado justifica incorporarla según la calidad, la carga de revisión y el efecto en los roles.',
+    criteria: [['Trabajo y créditos', 1], ['Archivo y derechos', 2], ['Propósito', 1], ['Autoría', 1], ['Privacidad', 2]],
+  },
+  {
+    title: 'La ilustración toma la palabra',
+    summary: 'Una imagen generada puede abrir un registro expresivo propio. Tu película le da un estilo reconocible a la reconstrucción y hace visible el proceso que llevó a incluirla.',
+    criteria: [['Reconstrucciones', 1], ['Propósito', 2], ['Transparencia', 1], ['Sesgos y representación', 1], ['Archivo y derechos', 2]],
+  },
+  {
+    title: 'Realista, con el cartel puesto',
+    summary: 'Considerás la recreación realista cuando una escena la necesita. El espectador se entera desde la primera aparición, y el uso de voces o rostros de personas reales requiere un acuerdo específico.',
+    criteria: [['Reconstrucciones', 2], ['Consentimiento', 1], ['Propósito', 2], ['Transparencia', 0], ['Autoría', 0]],
+  },
+  {
+    title: 'El aviso viaja con el plano',
+    summary: 'Tu transparencia está pensada para cómo circula el cine. Si un plano generado termina en un tráiler, un clip o una pieza suelta, lleva consigo la información necesaria para que el público pueda interpretarlo.',
+    criteria: [['Transparencia', 2], ['Reconstrucciones', 2], ['Propósito', 2], ['Consentimiento', 2], ['Autoría', 2]],
+  },
+];
 
 export function getManifiestoProfile(answers) {
-  const scores = { archive: 0, craft: 0, people: 0, audience: 0 };
-  for (const [index, { topic }] of commandments.entries()) {
-    const profile = profileByAnswer[topic][answers[index]];
-    // An explicit commitment to label or explain synthetic material weighs more.
-    scores[profile] += profile === 'audience' ? 2 : 1;
-  }
-  const highest = Math.max(...Object.values(scores));
-  const leading = Object.keys(scores).filter((profile) => scores[profile] === highest);
-  if (leading.length === 1) return profiles[leading[0]];
+  const byTopic = Object.fromEntries(commandments.map(({ topic }, index) => [topic, answers[index]]));
+  let best = profiles[0];
+  let bestScore = -1;
+  let bestPriority = -1;
 
-  return {
-    title: 'Entre el archivo y el algoritmo',
-    summary: 'Tu manifiesto combina varias prioridades. Las decisiones sobre la IA cambian según lo que necesita cada escena.',
-  };
+  for (const profile of profiles) {
+    let score = 0;
+    let priority = 0;
+    profile.criteria.forEach(([topic, answer], index) => {
+      if (byTopic[topic] !== answer) return;
+      score += weights[index];
+      priority += 2 ** (weights.length - index - 1);
+    });
+    // Ties favor matching higher-priority criteria, then the order of the catalog.
+    if (score > bestScore || (score === bestScore && priority > bestPriority)) {
+      best = profile;
+      bestScore = score;
+      bestPriority = priority;
+    }
+  }
+
+  return { title: best.title, summary: best.summary };
 }
