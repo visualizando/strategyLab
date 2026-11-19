@@ -18,7 +18,7 @@ const examples = [
   },
 ];
 
-export function CapsuleExamples({ heading: Heading = 'h5' }) {
+export function CapsuleExamples() {
   return examples.map(({ category, label, icon, title, summary }) => (
     <article key={category} className="evidence" data-capsule-category={category}>
       <div className="capsule-meta">
@@ -27,7 +27,7 @@ export function CapsuleExamples({ heading: Heading = 'h5' }) {
       </div>
       <div className="evidence-title">
         <Icon name={icon} size={17} />
-        <Heading className="evidence-heading">{title}</Heading>
+        <h5 className="evidence-heading">{title}</h5>
       </div>
       <p>{summary}</p>
     </article>

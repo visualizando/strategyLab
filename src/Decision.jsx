@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { alternatives, CAPSULES, STUDIES, toneLabel } from './content';
 import { Icon } from './graphics';
+import { CapsuleExamples } from './CapsuleExamples';
 
 export const ease = [0.22, 1, 0.36, 1];
 
@@ -139,6 +140,7 @@ export function Controls({ question, saved, onSave, onClear, onClose, reduced })
             <h4 id={`${id}-evidence`}>Cápsulas</h4>
           </div>
           {ids.map((study) => <Evidence key={study} id={study} />)}
+          {id === 'audience' && <CapsuleExamples />}
         </section>
       </div>
       <footer className="camera-actions">

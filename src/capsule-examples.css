@@ -32,13 +32,3 @@
 .evidence[data-capsule-category] .evidence-title {
   color: var(--capsule-accent);
 }
-
-.gap-examples {
-  position: relative;
-  display: grid;
-  gap: 20px;
-  width: min(88%, 20rem);
-  margin-top: 20px;
-  user-select: text;
-  -webkit-user-select: text;
-}
